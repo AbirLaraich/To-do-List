@@ -1,1 +1,27 @@
-node_modules
+# Dépendances
+node_modules/
+
+# Fichiers Expo
+.expo/
+
+# Artéfacts de construction Android
+android/.gradle/
+android/app/build/
+
+# Journaux
+logs/
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Fichiers d'environnement local
+.env
+.env.local
+
+# Fichiers de construction TypeScript
+*.tsbuildinfo
+
+# Fichiers spécifiques à l'IDE
+.idea/
+.vscode/
+*.sublime-workspace
