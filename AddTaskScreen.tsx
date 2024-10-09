@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, TextInput, View, Text, Alert } from "react-native";
+import { Button, TextInput, View, Text, Alert, StyleSheet } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 interface Task {
@@ -25,34 +25,30 @@ const AddTaskScreen = ({ navigation }: { navigation: any }) => {
       completed: false,
     };
 
-    const storedTasks = await SecureStore.getItemAsync(TASKS_STORAGE_KEY);
-    const tasks = storedTasks ? JSON.parse(storedTasks) : [];
-
-    const updatedTasks = [...tasks, newTask];
-
     try {
+      const storedTasks = await SecureStore.getItemAsync(TASKS_STORAGE_KEY);
+      const tasks = storedTasks ? JSON.parse(storedTasks) : [];
+      const updatedTasks = [...tasks, newTask];
+      
       await SecureStore.setItemAsync(TASKS_STORAGE_KEY, JSON.stringify(updatedTasks));
       setTaskName("");
-      navigation.navigate("Home", { newTask }); 
+      Alert.alert("Success", "Task added successfully!", [
+        {
+          text: "OK",
+          onPress: () => navigation.navigate("Home", { newTask }),
+        },
+      ]);
     } catch (error) {
       console.error("Error saving tasks", error);
+      Alert.alert("Error", "Failed to save task");
     }
-
-    Alert.alert("Success", "Task added successfully!");
   };
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <Text style={{ fontSize: 24, marginBottom: 20 }}>Add New Todo</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Add New Todo</Text>
       <TextInput
-        style={{
-          width: "100%",
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 10,
-          marginBottom: 20,
-          borderRadius: 5,
-        }}
+        style={styles.input}
         placeholder="Enter your task"
         value={taskName}
         onChangeText={setTaskName}
@@ -61,5 +57,24 @@ const AddTaskScreen = ({ navigation }: { navigation: any }) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+  },
+  input: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 20,
+    borderRadius: 5,
+  },
+});
 
 export default AddTaskScreen;
