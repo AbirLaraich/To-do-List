@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Button, TextInput, View, Text, Alert, StyleSheet } from "react-native";
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 interface Task {
@@ -21,7 +31,7 @@ const AddTaskScreen = ({ navigation }: { navigation: any }) => {
 
     const newTask: Task = {
       id: Math.random().toString(),
-      text: taskName,
+      text: taskName.trim(),
       completed: false,
     };
 
@@ -31,49 +41,125 @@ const AddTaskScreen = ({ navigation }: { navigation: any }) => {
       const updatedTasks = [...tasks, newTask];
       
       await SecureStore.setItemAsync(TASKS_STORAGE_KEY, JSON.stringify(updatedTasks));
-      setTaskName("");
-      Alert.alert("Success", "Task added successfully!", [
-        {
-          text: "OK",
-          onPress: () => navigation.navigate("Home", { newTask }),
-        },
-      ]);
+      navigation.navigate("Home", { newTask });
     } catch (error) {
-      console.error("Error saving tasks", error);
+      console.error("Error saving task", error);
       Alert.alert("Error", "Failed to save task");
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Add New Todo</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your task"
-        value={taskName}
-        onChangeText={setTaskName}
-      />
-      <Button title="Add Task" onPress={addTask} />
-    </View>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardAvoid}
+      >
+        <Text style={styles.title}>Add New Task</Text>
+        
+        <TextInput
+          style={styles.input}
+          placeholder="What needs to be done?"
+          placeholderTextColor="#8E8E93"
+          value={taskName}
+          onChangeText={setTaskName}
+          multiline
+          autoFocus
+        />
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={styles.cancelButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.addButton, !taskName.trim() && styles.addButtonDisabled]}
+            onPress={addTask}
+            disabled={!taskName.trim()}
+          >
+            <Text style={[styles.addButtonText, !taskName.trim() && styles.addButtonTextDisabled]}>
+              Add Task
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F5F5F7',
+  },
+  keyboardAvoid: {
+    flex: 1,
     padding: 20,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontSize: 34,
+    fontWeight: "bold",
+    color: '#1A1A1A',
+    marginBottom: 30,
   },
   input: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginBottom: 20,
-    borderRadius: 5,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 16,
+    fontSize: 16,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    marginBottom: 30,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  addButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    flex: 1,
+    marginLeft: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  addButtonDisabled: {
+    backgroundColor: '#B4D0F5',
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  addButtonTextDisabled: {
+    opacity: 0.7,
+  },
+  cancelButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    flex: 1,
+    marginRight: 10,
+    backgroundColor: '#E5E5EA',
+  },
+  cancelButtonText: {
+    color: '#8E8E93',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
 

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  Button,
-  FlatList,
   StyleSheet,
   Text,
   View,
-  Alert,
   TouchableOpacity,
+  FlatList,
+  Alert,
+  SafeAreaView,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { Swipeable } from "react-native-gesture-handler";
@@ -24,9 +24,9 @@ const HomeScreen = ({ navigation, route }: { navigation: any; route: any }) => {
 
   useEffect(() => {
     loadTasks();
-
     if (route.params?.newTask) {
       setTasks((prevTasks) => [...prevTasks, route.params.newTask]);
+      saveTasks([...tasks, route.params.newTask]);
     }
   }, [route.params]);
 
@@ -101,94 +101,207 @@ const HomeScreen = ({ navigation, route }: { navigation: any; route: any }) => {
     return (
       <Swipeable renderRightActions={() => renderRightActions(item.id)}>
         <TouchableOpacity
-          style={styles.taskItem}
+          style={[styles.taskItem, item.completed && styles.taskItemCompleted]}
           onPress={() => updateTaskStatus(item.id)}
         >
-          <Text style={styles.taskText}>{item.text}</Text>
+          <View style={styles.checkbox}>
+            {item.completed && <View style={styles.checkboxInner} />}
+          </View>
+          <Text 
+            style={[
+              styles.taskText,
+              item.completed && styles.taskTextCompleted
+            ]}
+          >
+            {item.text}
+          </Text>
         </TouchableOpacity>
       </Swipeable>
     );
   };
 
+  const renderSectionHeader = (title: string, count: number) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.subTitle}>{title}</Text>
+      <View style={styles.countBadge}>
+        <Text style={styles.countText}>{count}</Text>
+      </View>
+    </View>
+  );
+
+  const pendingTasks = tasks.filter(task => !task.completed);
+  const completedTasks = tasks.filter(task => task.completed);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>To do list</Text>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>To-Do List</Text>
+      
       <View style={styles.buttonContainer}>
-        <Button
-          title="Add a new todo"
+        <TouchableOpacity 
+          style={styles.addButton}
           onPress={() => navigation.navigate("AddTask")}
-        />
-        <Button title="Remove todos" onPress={removeAllTasks} color="red" />
+        >
+          <Text style={styles.addButtonText}>+ Add Task</Text>
+        </TouchableOpacity>
+        
+        {tasks.length > 0 && (
+          <TouchableOpacity 
+            style={styles.clearButton}
+            onPress={removeAllTasks}
+          >
+            <Text style={styles.clearButtonText}>Clear All</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.listContainer}>
-        <Text style={styles.subTitle}>Pending</Text>
+        {renderSectionHeader('Pending', pendingTasks.length)}
         <FlatList
           style={styles.list}
-          data={tasks.filter((task) => !task.completed)}
+          data={pendingTasks}
           keyExtractor={(item) => item.id}
           renderItem={renderTaskItem}
+          showsVerticalScrollIndicator={false}
         />
 
-        <Text style={styles.subTitle}>Completed</Text>
-        <FlatList
-          style={styles.list}
-          data={tasks.filter((task) => task.completed)}
-          keyExtractor={(item) => item.id}
-          renderItem={renderTaskItem}
-        />
+        {completedTasks.length > 0 && (
+          <>
+            {renderSectionHeader('Completed', completedTasks.length)}
+            <FlatList
+              style={styles.list}
+              data={completedTasks}
+              keyExtractor={(item) => item.id}
+              renderItem={renderTaskItem}
+              showsVerticalScrollIndicator={false}
+            />
+          </>
+        )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#F5F5F7',
     padding: 20,
+  },
+  title: {
+    fontSize: 34,
+    fontWeight: "bold",
+    color: '#1A1A1A',
+    marginBottom: 20,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 30,
+  },
+  addButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  clearButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  clearButtonText: {
+    color: '#FF3B30',
+    fontSize: 16,
+    fontWeight: '600',
   },
   listContainer: {
     flex: 1,
-    width: '100%',
   },
   list: {
-    width: '100%',
-  },
-  title: {
-    fontSize: 40,
-    fontWeight: "bold",
     marginBottom: 20,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   subTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginVertical: 10,
+    fontSize: 20,
+    fontWeight: "600",
+    color: '#1A1A1A',
+  },
+  countBadge: {
+    backgroundColor: '#E5E5EA',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  countText: {
+    color: '#8E8E93',
+    fontSize: 14,
+    fontWeight: '500',
   },
   taskItem: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
-    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 10,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  taskItemCompleted: {
+    opacity: 0.9,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#007AFF',
   },
   taskText: {
-    fontSize: 18,
+    fontSize: 16,
+    color: '#1A1A1A',
+    flex: 1,
+  },
+  taskTextCompleted: {
+    color: '#8E8E93',
   },
   deleteButton: {
-    backgroundColor: "red",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
     width: 80,
-    height: "100%",
+    height: '100%',
+    borderRadius: 10,
   },
   deleteText: {
-    color: "white",
-    fontWeight: "bold",
+    color: 'white',
+    fontWeight: '600',
   },
 });
 
