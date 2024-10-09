@@ -107,10 +107,10 @@ const HomeScreen = ({ navigation, route }: { navigation: any; route: any }) => {
           <View style={styles.checkbox}>
             {item.completed && <View style={styles.checkboxInner} />}
           </View>
-          <Text 
+          <Text
             style={[
               styles.taskText,
-              item.completed && styles.taskTextCompleted
+              item.completed && styles.taskTextCompleted,
             ]}
           >
             {item.text}
@@ -129,48 +129,45 @@ const HomeScreen = ({ navigation, route }: { navigation: any; route: any }) => {
     </View>
   );
 
-  const pendingTasks = tasks.filter(task => !task.completed);
-  const completedTasks = tasks.filter(task => task.completed);
+  const pendingTasks = tasks.filter((task) => !task.completed);
+  const completedTasks = tasks.filter((task) => task.completed);
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>To-Do List</Text>
-      
+
       <View style={styles.buttonContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addButton}
           onPress={() => navigation.navigate("AddTask")}
         >
           <Text style={styles.addButtonText}>+ Add Task</Text>
         </TouchableOpacity>
-        
+
         {tasks.length > 0 && (
-          <TouchableOpacity 
-            style={styles.clearButton}
-            onPress={removeAllTasks}
-          >
+          <TouchableOpacity style={styles.clearButton} onPress={removeAllTasks}>
             <Text style={styles.clearButtonText}>Clear All</Text>
           </TouchableOpacity>
         )}
       </View>
 
       <View style={styles.listContainer}>
-        {renderSectionHeader('Pending', pendingTasks.length)}
+        {renderSectionHeader("Pending", pendingTasks.length)}
         <FlatList
           style={styles.list}
           data={pendingTasks}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={renderTaskItem}
           showsVerticalScrollIndicator={false}
         />
 
-        {completedTasks.length > 0 && (
+        {completedTasks.length >= 0 && (
           <>
-            {renderSectionHeader('Completed', completedTasks.length)}
+            {renderSectionHeader("Completed", completedTasks.length)}
             <FlatList
               style={styles.list}
               data={completedTasks}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item.id.toString()}
               renderItem={renderTaskItem}
               showsVerticalScrollIndicator={false}
             />
@@ -184,44 +181,44 @@ const HomeScreen = ({ navigation, route }: { navigation: any; route: any }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
+    backgroundColor: "#F5F5F7",
     padding: 20,
   },
   title: {
     fontSize: 34,
     fontWeight: "bold",
-    color: '#1A1A1A',
+    color: "#1A1A1A",
     marginBottom: 20,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 30,
   },
   addButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   addButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   clearButton: {
     paddingVertical: 12,
     paddingHorizontal: 20,
   },
   clearButtonText: {
-    color: '#FF3B30',
+    color: "#FF3B30",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   listContainer: {
     flex: 1,
@@ -230,36 +227,36 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
   },
   subTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: '#1A1A1A',
+    color: "#1A1A1A",
   },
   countBadge: {
-    backgroundColor: '#E5E5EA',
+    backgroundColor: "#E5E5EA",
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
     marginLeft: 8,
   },
   countText: {
-    color: '#8E8E93',
+    color: "#8E8E93",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   taskItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
     padding: 16,
     borderRadius: 10,
     marginBottom: 10,
     elevation: 1,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -272,36 +269,36 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#007AFF',
+    borderColor: "#007AFF",
     marginRight: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkboxInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   taskText: {
     fontSize: 16,
-    color: '#1A1A1A',
+    color: "#1A1A1A",
     flex: 1,
   },
   taskTextCompleted: {
-    color: '#8E8E93',
+    color: "#8E8E93",
   },
   deleteButton: {
-    backgroundColor: '#FF3B30',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#FF3B30",
+    justifyContent: "center",
+    alignItems: "center",
     width: 80,
-    height: '100%',
+    height: "100%",
     borderRadius: 10,
   },
   deleteText: {
-    color: 'white',
-    fontWeight: '600',
+    color: "white",
+    fontWeight: "600",
   },
 });
 
