@@ -12,16 +12,20 @@ import {
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
-const TASKS_STORAGE_KEY = "tasks"; 
+interface Task {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
+const TASKS_STORAGE_KEY = "tasks";
 
 export default function App() {
-  const [tasks, setTasks] = useState<
-    { id: string; text: string; completed: boolean }[]
-  >([]);
+  const [tasks, setTasks] = useState<Task[]>([]); 
   const [taskName, setTaskName] = useState("");
 
   useEffect(() => {
-    loadTasks(); 
+    loadTasks();
   }, []);
 
   const loadTasks = async () => {
@@ -35,7 +39,7 @@ export default function App() {
     }
   };
 
-  const saveTasks = async (tasksToSave: { id: string; text: string; completed: boolean }[]) => {
+  const saveTasks = async (tasksToSave: Task[]) => {
     try {
       await SecureStore.setItemAsync(TASKS_STORAGE_KEY, JSON.stringify(tasksToSave));
     } catch (error) {
@@ -45,7 +49,7 @@ export default function App() {
 
   const addTask = () => {
     if (taskName.trim().length === 0) return;
-    const newTask = {
+    const newTask: Task = { 
       id: Math.random().toString(),
       text: taskName,
       completed: false,
@@ -53,7 +57,7 @@ export default function App() {
 
     const updatedTasks = [...tasks, newTask];
     setTasks(updatedTasks);
-    saveTasks(updatedTasks); 
+    saveTasks(updatedTasks);
     setTaskName("");
   };
 
@@ -67,7 +71,7 @@ export default function App() {
         text: "OK",
         onPress: () => {
           setTasks([]);
-          saveTasks([]); 
+          saveTasks([]);
         },
       },
     ]);
@@ -76,13 +80,23 @@ export default function App() {
   const toggleTaskCompletion = (id: string) => {
     const updatedTasks = tasks.map((task) => {
       if (task.id === id) {
-        return { ...task, completed: !task.completed }; 
+        return { ...task, completed: !task.completed };
       }
       return task;
     });
     setTasks(updatedTasks);
-    saveTasks(updatedTasks); 
+    saveTasks(updatedTasks);
   };
+
+  const renderTaskItem = ({ item }: { item: Task }) => ( 
+    <TouchableOpacity
+      style={styles.taskItem}
+      onPress={() => toggleTaskCompletion(item.id)}
+    >
+      <Text style={styles.taskText}>{item.text}</Text>
+      <Text style={styles.statusText}>{item.completed ? "Completed" : "In Progress"}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -98,34 +112,16 @@ export default function App() {
 
       <Text style={styles.subTitle}>Pending</Text>
       <FlatList
-        data={tasks.filter((task) => !task.completed)} 
+        data={tasks.filter((task) => !task.completed)}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.taskItem}
-            onPress={() => toggleTaskCompletion(item.id)}
-          >
-            <Text style={styles.taskText}>{item.text}</Text>
-            <Text style={styles.statusText}>In Progress</Text>
-          </TouchableOpacity>
-        )}
+        renderItem={renderTaskItem}
       />
 
       <Text style={styles.subTitle}>Completed</Text>
       <FlatList
         data={tasks.filter((task) => task.completed)}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.taskItem}
-            onPress={() => toggleTaskCompletion(item.id)}
-          >
-            <Text style={[styles.taskText, styles.completedTask]}>
-              {item.text}
-            </Text>
-            <Text style={styles.statusText}>Completed</Text>
-          </TouchableOpacity>
-        )}
+        renderItem={renderTaskItem}
       />
       <StatusBar style="auto" />
     </View>
@@ -171,9 +167,6 @@ const styles = StyleSheet.create({
   taskText: {
     fontSize: 18,
     flex: 1,
-  },
-  completedTask: {
-    
   },
   statusText: {
     fontSize: 14,
